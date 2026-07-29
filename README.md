@@ -43,6 +43,136 @@ Este proyecto demuestra el manejo de:
 - **Migraciones** y **modelos** Eloquent
 - **Vistas Blade** con directivas (`@foreach`, `@if`, `@csrf`, `@method`)
 ---
+
+## 🌐 API REST
+ 
+TaskAuth incluye una API REST para gestionar tareas mediante peticiones HTTP. Todas las rutas de tareas requieren autenticación por token (Laravel Sanctum).
+ 
+### Autenticación
+ 
+Para obtener un token, envía tus credenciales al endpoint de login:
+ 
+```http
+POST /api/login
+Content-Type: application/json
+ 
+{
+    "email": "tu@email.com",
+    "password": "tu_contraseña"
+}
+```
+ 
+**Respuesta:**
+ 
+```json
+{
+    "token": "1|aBcDeF123456..."
+}
+```
+ 
+Guarda ese token y envíalo en cada petición protegida mediante la cabecera `Authorization`:
+ 
+```http
+Authorization: Bearer 1|aBcDeF123456...
+```
+ 
+### Endpoints
+ 
+Todos los endpoints siguientes requieren la cabecera `Authorization: Bearer {token}`.
+ 
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| `GET` | `/api/tareas` | Lista todas las tareas del usuario autenticado |
+| `POST` | `/api/tareas` | Crea una nueva tarea |
+| `PATCH` | `/api/tareas/{id}/completar` | Marca una tarea como completada |
+| `DELETE` | `/api/tareas/{id}` | Elimina una tarea |
+ 
+### Ejemplos
+ 
+**Listar tareas**
+ 
+```http
+GET /api/tareas
+Authorization: Bearer {token}
+```
+ 
+Respuesta:
+ 
+```json
+[
+    {
+        "id": 1,
+        "user_id": 1,
+        "title": "Aprender APIs",
+        "completed": false,
+        "created_at": "2026-07-29T13:00:00.000000Z",
+        "updated_at": "2026-07-29T13:00:00.000000Z"
+    }
+]
+```
+ 
+**Crear una tarea**
+ 
+```http
+POST /api/tareas
+Authorization: Bearer {token}
+Content-Type: application/json
+ 
+{
+    "title": "Nueva tarea"
+}
+```
+ 
+Respuesta (código `201 Created`):
+ 
+```json
+{
+    "id": 2,
+    "user_id": 1,
+    "title": "Nueva tarea",
+    "completed": false,
+    "created_at": "2026-07-29T14:00:00.000000Z",
+    "updated_at": "2026-07-29T14:00:00.000000Z"
+}
+```
+ 
+**Completar una tarea**
+ 
+```http
+PATCH /api/tareas/2/completar
+Authorization: Bearer {token}
+```
+ 
+**Eliminar una tarea**
+ 
+```http
+DELETE /api/tareas/2
+Authorization: Bearer {token}
+```
+ 
+Respuesta:
+ 
+```json
+{
+    "message": "Tarea eliminada"
+}
+```
+ 
+### Validación
+ 
+El campo `title` es obligatorio, debe ser texto y no superar los 255 caracteres. Si no se cumple, la API responde con código `422 Unprocessable Entity` y los detalles del error.
+ 
+### Seguridad
+ 
+Cada usuario solo puede ver y modificar sus propias tareas. Si un usuario intenta acceder a una tarea que no le pertenece, la API responde con `404 Not Found`.
+ 
+### Tests
+ 
+La API está cubierta por tests automatizados (`tests/Feature/TaskApiTest.php`) que verifican la autenticación, el CRUD completo y el aislamiento de datos entre usuarios. Para ejecutarlos:
+ 
+```bash
+php artisan test --filter=TaskApiTest
+```
  
 ## 🔗 La relación usuario–tarea
  

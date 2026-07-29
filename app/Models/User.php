@@ -12,6 +12,10 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use App\Models\Task;
+use Laravel\Sanctum\HasApiTokens;
+
+
+
 /**
  * @property int $id
  * @property string $name
@@ -30,7 +34,7 @@ use App\Models\Task;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
      * Get the attributes that should be cast.
